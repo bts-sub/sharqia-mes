@@ -1,9 +1,18 @@
 # Odoo 19 SaaS Integration Plan
 
-> You confirmed manufacturing data lives in a **custom Odoo module**. Therefore
-> **every model/field technical name below is a PROPOSAL, not a verified name.**
-> Confirm each one against your module before enabling Odoo. The code is built so
-> that only `src/services/odoo/odooModels.js` + `mappers.js` change — the UI does not.
+> **STATUS (2026-09): CONNECTED.** The custom module `sharqia_mes` is built and
+> installed on the live Odoo 19 (repo tech-shark-net/bait-abaya). All model and
+> field names in `src/services/odoo/odooModels.js` + `mappers.js` are now the
+> **REAL, verified** technical names — every FIELDS list was validated against the
+> live database. To go live, set `SHARQIA_DATA_SOURCE=odoo` in `.env`, fill the
+> Odoo URL/DB, rebuild (`npm run prepare:web`), and redeploy. Rows below with
+> "PROPOSAL" wording are historical; the code is the source of truth.
+>
+> Design chosen: reuse standard Odoo (hr.employee, mrp.workcenter, mrp.production,
+> mrp.workorder, product.product) with `mes_*` fields, plus custom `sharqia.mes.*`
+> models for routes/points/buffers/templates/hangers/defects/qc/announcements, and
+> 5 security groups (station worker, store, quality, production manager, plant
+> manager) mapped to the app roles in `authService.GROUP_TO_ROLE`.
 
 ## 0. Golden rules honored by this scaffold
 - No Odoo URL, database, or credentials anywhere in the code.
