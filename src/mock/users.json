@@ -1,0 +1,5 @@
+[
+  { "id": 2, "login": "production.manager", "name": "Production Manager", "role": "pm", "groups": ["sharqia_mes.group_production_manager"] },
+  { "id": 3, "login": "plant.manager", "name": "Plant Manager", "role": "plant", "groups": ["sharqia_mes.group_plant_manager"] },
+  { "id": 4, "login": "quality.officer", "name": "Quality Officer", "role": "qc", "groups": ["sharqia_mes.group_quality"] }
+]

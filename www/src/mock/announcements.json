@@ -1,0 +1,1 @@
+[ { "id": 1, "title": { "ar": "صيانة ماكينة التطريز", "en": "Embroidery maintenance" }, "body": { "ar": "من 13:00 إلى 14:00", "en": "13:00-14:00" }, "type": "maint", "level": "urgent", "audience": "all", "start": "2026-07-18", "expires": "2026-12-31", "station": "emb" } ]

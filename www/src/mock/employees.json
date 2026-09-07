@@ -1,0 +1,5 @@
+[
+  { "id": "E-101", "name": { "ar": "أحمد", "en": "Ahmed" }, "station": "cut", "att": "present", "active": true, "exp": "senior", "eff": 92 },
+  { "id": "E-201", "name": { "ar": "خالد", "en": "Khaled" }, "station": "sew", "att": "present", "active": true, "exp": "senior", "eff": 90 },
+  { "id": "E-301", "name": { "ar": "محمد", "en": "Mohammed" }, "station": "emb", "att": "present", "active": true, "exp": "mid", "eff": 88 }
+]

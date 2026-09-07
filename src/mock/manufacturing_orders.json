@@ -1,0 +1,4 @@
+[
+  { "id": "RUN-1001", "mo": "MO-0044", "product": "A102", "qty": 245, "done": 201, "status": "running", "priority": "urgent", "start": "2026-08-01", "due": "2026-08-08", "assignments": [] },
+  { "id": "RUN-1000", "mo": "MO-0001", "product": "A100", "qty": 120, "done": 120, "status": "done", "priority": "normal", "start": "2026-07-28", "due": "2026-08-02", "assignments": [] }
+]

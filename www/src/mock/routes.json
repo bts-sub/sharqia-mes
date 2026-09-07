@@ -1,0 +1,7 @@
+[
+  { "id": "PR-1", "name": { "ar": "المسار 1 — التجهيز والخياطة", "en": "Route 1 — Prep & sewing" }, "product": "A102", "mo": "MO-0044", "capacity": 300, "active": true,
+    "points": [
+      { "id": "WP-1a", "name": { "ar": "القص", "en": "Cutting" }, "station": "cut", "emps": ["E-101"], "qty": 20, "target": 60, "std": "45s", "qcReq": false, "status": "running" },
+      { "id": "WP-1b", "name": { "ar": "خياطة 1", "en": "Sewing 1" }, "station": "sew", "emps": ["E-201"], "qty": 35, "target": 40, "std": "38s", "qcReq": false, "status": "running" }
+    ] }
+]

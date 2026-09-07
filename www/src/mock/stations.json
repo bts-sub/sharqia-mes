@@ -1,0 +1,5 @@
+[
+  { "key": "cut", "name": { "ar": "القص", "en": "Cutting" }, "dept": "cut", "capacity": 60 },
+  { "key": "sew", "name": { "ar": "الخياطة", "en": "Sewing" }, "dept": "sew", "capacity": 40 },
+  { "key": "emb", "name": { "ar": "التطريز", "en": "Embroidery" }, "dept": "emb", "capacity": 30 }
+]
