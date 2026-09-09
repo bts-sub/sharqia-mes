@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="شرقية MES">
+  <title>Sharqia MES</title>
+  <defs><linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#242018"/><stop offset="1" stop-color="#000000"/></linearGradient></defs>
+  <rect width="64" height="64" rx="14" fill="url(#t)"/>
+  <path d="M46 24.5V33.5" fill="none" stroke="#F5C400" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38 24.5V33.5" fill="none" stroke="#F5C400" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30 24.5V33.5" fill="none" stroke="#F5C400" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M50 33.5H28C24 41.5 19 46.5 15 43.5C12 41.5 11.5 38.5 12 34.5" fill="none" stroke="#F5C400" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#F5C400"><circle cx="33" cy="17" r="3.2"/><circle cx="39.5" cy="17" r="3.2"/><circle cx="46" cy="17" r="3.2"/></g>
+</svg>
