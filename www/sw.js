@@ -10,7 +10,7 @@
  *
  * عند كل نشر: غيّر VERSION ليُمسح الكاش القديم.
  */
-const VERSION = 'sharqia-mes-v2';
+const VERSION = 'sharqia-mes-v3';
 const CORE = ['/', '/index.html', '/env.js', '/site.webmanifest', '/favicon.ico',
   '/assets/icon-192.png', '/assets/icon-512.png', '/assets/icon-180.png', '/assets/icon-32.png'];
 

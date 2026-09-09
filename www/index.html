@@ -588,6 +588,7 @@
   .logincard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--sh-2);padding:28px 22px;max-width:420px;margin:0 auto;width:100%;animation:cardIn .35s ease both}
   .loginlogo{display:flex;justify-content:center;margin-bottom:14px}
   .loginname{text-align:center;font-size:22px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+  .brandline{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 10px;padding:9px 12px;background:var(--surface);border:1px solid var(--line);border-bottom:2px solid var(--brand);border-radius:var(--r-m);font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.2px;text-align:center}
   .loginver{text-align:center;font-size:12px;color:var(--muted);font-weight:700;margin-top:5px;margin-bottom:16px}
   .logincard .fi{height:52px;font-size:15px}
   .loginbtn{height:56px;font-size:18px;margin-top:18px}
@@ -1916,13 +1917,13 @@ var Screens={};
 Screens.langPick=function(){$('topbar').innerHTML='';applyDir();
   $('view').innerHTML='<div class="langwrap"><div class="langbox">'+logoMark(64)+
     '<div class="lgt">'+esc(LL('اختر لغتك','Choose your language','اپنی زبان منتخب کریں','Choisissez votre langue'))+'</div>'+
-    '<div class="lgsub">Sharqia Hanging System</div>'+
+    '<div class="lgsub">بيت العباءة الشرقية MES</div>'+
     '<div class="langpick" style="margin-top:16px">'+I18N.langs.map(function(l){return '<button class="lgb'+(I18N.cur===l[0]?' on':'')+'" onclick="Actions.pickLang(\''+l[0]+'\')"><span class="fx">'+l[2]+'</span>'+esc(l[1])+'</button>';}).join('')+'</div></div></div>';};
 Screens.login=function(){$('topbar').innerHTML='';applyDir();var yr='2026';try{yr=String(new Date().getFullYear());}catch(e){}
   $('view').innerHTML='<div class="loginwrap"><div style="flex:1;min-height:8px"></div>'+
     '<div class="logincard">'+
       '<div class="loginlogo">'+logoMark(92)+'</div>'+
-      '<div class="loginname">Sharqia Hanging System</div>'+
+      '<div class="loginname">بيت العباءة الشرقية MES</div>'+
       '<div class="loginver">v'+APP.version+'</div>'+
       '<label class="fl">'+esc(T('username'))+'</label><input class="fi" id="lg_u" placeholder="station.cutting" autocomplete="username">'+
       '<label class="fl">'+esc(T('password'))+'</label><input class="fi" id="lg_p" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)">'+
@@ -1930,7 +1931,7 @@ Screens.login=function(){$('topbar').innerHTML='';applyDir();var yr='2026';try{y
       (Store.demoMode?'<div class="demopick"><div class="dl">'+esc(LL('دخول سريع — وضع التجربة','Quick login — Demo mode','فوری — ٹیسٹ','Démo'))+'</div><div class="dpg">'+Store.accounts.map(function(a){var ic=a.role==='admin'?'⚙️':(a.role==='pm'||a.role==='plant')?'📊':a.role==='qc'?'🔍':a.role==='store'?'📦':'👷';return '<button class="dpc" onclick="Auth.enter(Store.accounts['+Store.accounts.indexOf(a)+'])"><span>'+ic+'</span>'+esc(roleName(a.role))+'</button>';}).join('')+'</div></div>':'')+
     '</div>'+
     '<div style="flex:1;min-height:8px"></div>'+
-    '<div class="loginfoot">'+logoMark(30)+'<div class="cp">© '+esc(yr)+' '+esc(LL('شرقيه — بيت العباءة الشرقية','Sharqia — Abaya House','شرقیہ','Sharqia'))+'</div><div class="lv">Sharqia Hanging System · v'+APP.version+'</div></div>'+
+    '<div class="loginfoot">'+logoMark(30)+'<div class="cp">© '+esc(yr)+' '+esc(LL('شرقيه — بيت العباءة الشرقية','Sharqia — Abaya House','شرقیہ','Sharqia'))+'</div><div class="lv">بيت العباءة الشرقية MES · v'+APP.version+'</div></div>'+
     '</div>';
 };
 
@@ -8573,7 +8574,7 @@ Nav.render=function(){if(!App.me)return;var n=$('nav');if(!n)return;if(App.me.ro
 Screens.login=function(){$('topbar').innerHTML='';applyDir();var yr='2026';
   var demo=Store.demoAccounts||[];
   var h='<div class="loginwrap"><div style="flex:1;min-height:8px"></div><div class="logincard">'+
-    '<div class="loginlogo">'+logoMark(92)+'</div><div class="loginname">Sharqia Hanging System</div><div class="loginver">v'+APP.version+'</div>'+
+    '<div class="loginlogo">'+logoMark(92)+'</div><div class="loginname">بيت العباءة الشرقية MES</div><div class="loginver">v'+APP.version+'</div>'+
     '<label class="fl">'+esc(T('username'))+'</label><input class="fi" id="lg_u" placeholder="production_manager" autocomplete="username">'+
     '<label class="fl">'+esc(T('password'))+'</label><div style="position:relative"><input class="fi" id="lg_p" type="password" placeholder="••••••••" autocomplete="current-password" style="padding-inline-end:44px" onkeydown="if(event.key===\'Enter\')Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)"><button type="button" onclick="Actions.loginTogglePw()" style="position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px" aria-label="show/hide">👁️</button></div>'+
     '<div id="lg_err" class="te" style="color:var(--late);min-height:16px;margin-top:4px"></div>'+
@@ -8582,7 +8583,7 @@ Screens.login=function(){$('topbar').innerHTML='';applyDir();var yr='2026';
     h+='<div class="demopick"><div class="dl">'+esc(LL('حسابات التجربة (تظهر في وضع الاختبار فقط)','Demo accounts (test mode only)','ٹیسٹ اکاؤنٹس','Comptes démo'))+'</div>';
     h+='<div style="max-height:230px;overflow:auto;text-align:start">'+demo.map(function(a){return '<div class="listitem clickable" style="margin:4px 0" onclick="Actions.loginAs(\''+a.u+'\')"><div class="row2"><span style="font-size:16px">'+a.ic+'</span><div style="flex:1;min-width:0"><b style="font-size:12px">'+esc(a.name)+'</b><div style="font-size:10.5px;color:var(--muted)">'+esc(a.u)+' · '+esc(a.pw)+'</div></div><span class="minichip">'+esc(LL('دخول','Login','','Entrer'))+'</span></div></div>';}).join('')+'</div></div>';
   }
-  h+='</div><div style="flex:1;min-height:8px"></div><div class="loginfoot">'+logoMark(30)+'<div class="cp">© '+esc(yr)+' '+esc(LL('شرقيه — بيت العباءة الشرقية','Sharqia — Abaya House','','Sharqia'))+'</div><div class="lv">Sharqia Hanging System · v'+APP.version+'</div></div></div>';
+  h+='</div><div style="flex:1;min-height:8px"></div><div class="loginfoot">'+logoMark(30)+'<div class="cp">© '+esc(yr)+' '+esc(LL('شرقيه — بيت العباءة الشرقية','Sharqia — Abaya House','','Sharqia'))+'</div><div class="lv">بيت العباءة الشرقية MES · v'+APP.version+'</div></div></div>';
   $('view').innerHTML=h;};
 Actions.loginTogglePw=function(){var el=$('lg_p');if(!el)return;el.type=(el.type==='password')?'text':'password';};
 Actions.loginAs=function(u){var a=null;for(var i=0;i<Store.accounts.length;i++)if(Store.accounts[i].u===u)a=Store.accounts[i];if(a)Auth.enter(a);};
@@ -11546,6 +11547,22 @@ try{
   try{TplStore.load();}catch(e){} /* تحميل قوالب التوزيع المحفوظة (أو زرع الافتراضي) */
   try{loadOrderExtras();}catch(e){} /* مسودّات الأوامر والمسارات الافتراضية لكل موديل */
 }catch(e){}
+/* اسم النظام على الشاشة الرئيسية.
+   يُلفّ Screens.home بدل تعديل شاشة كل دور على حدة (موظّف، جودة، مخزن،
+   مدير إنتاج، مدير مصنع، أدمن) — كلّها تمرّ من هنا، فسطرٌ واحد يكفيها. */
+(function(){
+  if(typeof Screens!=='object'||typeof Screens.home!=='function')return;
+  var _home=Screens.home;
+  Screens.home=function(){
+    var r=_home.apply(this,arguments);
+    try{
+      var v=$('view');
+      if(v&&!v.querySelector('.brandline'))
+        v.insertAdjacentHTML('afterbegin','<div class="brandline">'+logoMark(22)+'<span>بيت العباءة الشرقية MES</span></div>');
+    }catch(e){}
+    return r;
+  };
+})();
 try{ Router.render(); }catch(e){ try{errorScreen('boot',e.message,e.stack);}catch(_){} }
 </script>
 
