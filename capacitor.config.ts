@@ -12,7 +12,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  */
 const config: CapacitorConfig = {
   appId: 'com.sharqia.mes',
-  appName: 'Sharqia MES',
+  appName: 'بيت العباءة الشرقية MES',
   webDir: 'www',
   // bundledWebRuntime is deprecated in Capacitor 6; assets are bundled by default.
   plugins: {

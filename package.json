@@ -2,7 +2,7 @@
   "name": "sharqia-mes-mobile",
   "version": "1.0.0",
   "private": true,
-  "description": "Sharqia Hanging System — MES mobile app (Capacitor shell over the existing web UI, with an Odoo-ready data/service layer). No backend or demo server is bundled.",
+  "description": "بيت العباءة الشرقية MES — MES mobile app (Capacitor shell over the existing web UI, with an Odoo-ready data/service layer). No backend or demo server is bundled.",
   "type": "module",
   "scripts": {
     "prepare:web": "node scripts/build-web.js",
