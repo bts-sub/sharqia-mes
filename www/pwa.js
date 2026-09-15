@@ -24,7 +24,7 @@
     'border:1px solid #F5C400;border-radius:999px;padding:9px 12px 9px 16px;' +
     "font:600 13.5px/1.4 Cairo,system-ui,'Segoe UI',Tahoma,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.45)";
   el.innerHTML =
-    '<img src="/assets/icon-192.png" alt="" width="30" height="30" style="border-radius:8px;flex:none">' +
+    '<img src="/assets/icon-192.png?v=arch" alt="" width="30" height="30" style="border-radius:8px;flex:none">' +
     '<span id="sq-install-text">ثبّت التطبيق على شاشتك</span>' +
     '<button id="sq-install-go" style="background:#F5C400;color:#17170F;border:0;border-radius:999px;' +
     "padding:6px 14px;font:800 13px Cairo,system-ui,sans-serif;cursor:pointer\">تثبيت</button>" +
