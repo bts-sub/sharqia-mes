@@ -104,7 +104,11 @@ function wrapAuth() {
     say('جارٍ تسجيل الدخول…', 'Signing in…');
     authService.login(u, p)
       .then(async function (s) { await refresh(); enterAs(s.account); })
-      .catch(function (e) { say((e && e.message) || 'تعذّر تسجيل الدخول', 'Sign-in failed', 'err'); })
+      .catch(function (e) {
+        // The server's reason (wrong password, no app role…) in every language.
+        var why = (e && e.message) || 'تعذّر تسجيل الدخول';
+        say(why, why, 'err');
+      })
       .finally(function () { busy = false; });
   };
   var appLogout = Auth.logout.bind(Auth);
@@ -121,7 +125,8 @@ function track(kind, ref, promise) {
   link.synced.length = Math.min(link.synced.length, 50);
   return promise.then(function (r) { entry.ok = true; return r; }, function (e) {
     entry.ok = false; entry.error = e && e.message;
-    say('لم يُحفظ في أودو: ' + ((e && e.message) || ''), 'Not saved to Odoo', 'err');
+    var why = 'لم يُحفظ في أودو: ' + ((e && e.message) || '');
+    say(why, why, 'err');
     throw e;
   });
 }
@@ -190,8 +195,12 @@ export async function installOdooBridge() {
     log.error(link.error);
     return;
   }
+  // Live accounts only: the login screen's demo picker (with its passwords)
+  // and the demo "any password" rule belong to test mode.
+  Store.demoMode = false;
   wrapAuth();
   wrapActions();
+  render();
 
   // A still-valid session: load Odoo data and enter without asking again.
   try {

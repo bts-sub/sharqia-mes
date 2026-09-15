@@ -1,5 +1,22 @@
 # Odoo 19 SaaS Integration Plan
 
+> **LIVE (2026-09-15): the deployed app runs in ODOO mode through the portal gateway.**
+>
+> - **Path:** app → `mes.sharqiaa-tech.net/api/mes/*` (host nginx) → sharqia-portal
+>   `src/routes/mes.js` → Odoo with the portal's service account. No Odoo URL,
+>   database or key in this repo; no Odoo user per worker.
+> - **Sign-in:** portal account. App role = «دور تطبيق التصنيع» (`hr.employee.mes_role`:
+>   station/qc/store/pm/plant/admin). No role → refused. Portal `admin` → app admin.
+> - **Gateway limits:** only MES models; standard models (`hr.employee`, `mrp.*`,
+>   `product.product`) read with whitelisted fields; writes per role; never unlink.
+> - **Data** (`src/ui/odooBridge.js`): employees / stations / routes come from Odoo
+>   once Odoo holds any, else the app keeps its own; orders, announcements, defects
+>   and QC checks always come from Odoo. `Sharqia.link` in the console shows per
+>   domain what Odoo holds and which actions were saved.
+> - **Saved to Odoo today:** defect report (`Actions.dfSubmit`), announcement save
+>   (`annSave`) and delete (ends it: `expires` = yesterday). Every other action still
+>   changes the device only — wire the next ones in `odooBridge.js` the same way.
+>
 > **STATUS (2026-09): CONNECTED.** The custom module `sharqia_mes` is built and
 > installed on the live Odoo 19 (repo tech-shark-net/bait-abaya). All model and
 > field names in `src/services/odoo/odooModels.js` + `mappers.js` are now the
