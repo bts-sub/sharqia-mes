@@ -2505,7 +2505,8 @@ Screens.tasks=function(){topbar(T('tasks'),false);
       h+=mine.map(function(pc){return taskCard({title:pc.id+' — '+pc.product,mo:pc.mo,station:stName(pc.station),qty:1,done:pc.status==='completed'?1:0,prog:pc.status==='completed'?100:(pc.status==='in_progress'?50:0),prio:'normal',statusKey:pc.status,hex:'#1f2a44',route:'pieceDetail',rid:pc.id,mainLabel:T('open_details')});}).join('');}
   }else{
     /* المدير/المشرف: أوامر العمل كبطاقات مهام */
-    var list=[['MO-0001','A100','cut','in_progress',400,120,'urgent'],['MO-0002','A102E','emb','late',300,180,'urgent'],['MO-0044','A102','sew','in_progress',150,60,'normal'],['MO-0007','A102','pack','paused',250,90,'normal'],['MO-0003','A102','qc','not_started',200,0,'normal']];
+    /* أوامر العمل الحقيقية (كانت قائمةً ثابتة من بيانات التجربة) */
+    var list=(Store.runOrders||[]).map(function(o){return [o.mo||o.id,o.product||'',(o.stages||[])[0]||'',o.status||'not_started',o.qty||0,o.done||0,o.priority||'normal'];});
     h+='<div class="seclabel"><span class="t">'+esc(T('wo_status'))+'</span></div>';
     h+=list.map(function(o){return taskCard({title:o[0]+' — '+o[1],mo:o[0],station:stName(o[2]),qty:o[4],done:o[5],prog:pct(o[5],o[4]),prio:o[6],statusKey:o[3],hex:'#1f2a44',route:'pieces',mainLabel:T('open_details')});}).join('');
   }
@@ -9093,7 +9094,7 @@ function dfContext(me){
       ctx.routeId=rt.id;ctx.routeName=tr(rt.name);
     }
   }}catch(e){}
-  if(!ctx.orderId)ctx.orderId=((Store.runOrders||[])[0]||{}).mo||'A102';
+  if(!ctx.orderId)ctx.orderId=((Store.runOrders||[])[0]||{}).mo||'';
   if(!ctx.modelName)ctx.modelName=ctx.model||((Store.runOrders||[])[0]||{}).product||'—';
   if(!ctx.stationName)ctx.stationName=LL('غير محددة','—','—','—');
   if(!ctx.routeName)ctx.routeName=LL('المسار الرئيسي','Main route','مرکزی روٹ','Voie principale');
@@ -10217,7 +10218,7 @@ function rdContext(me){
     if(hs.order){if(!ctx.orderId)ctx.orderId=hs.order.mo||hs.order.code||'';if(!ctx.model)ctx.model=hs.order.product||'';if(!ctx.modelName)ctx.modelName=hs.order.product||ctx.model;}
     if(hs.routes&&hs.routes.length){var rt=hs.routes[0];for(var i=0;i<hs.routes.length;i++){var rr=hs.routes[i];var pts=rr.points||[];var hit=false;for(var j=0;j<pts.length;j++){if(pts[j].station===ctx.stationKey){hit=true;break;}}if(hit){rt=rr;break;}}ctx.routeId=rt.id;ctx.routeName=tr(rt.name);}
   }}catch(e){}
-  if(!ctx.orderId)ctx.orderId=((Store.runOrders||[])[0]||{}).mo||'A102';
+  if(!ctx.orderId)ctx.orderId=((Store.runOrders||[])[0]||{}).mo||'';
   if(!ctx.modelName)ctx.modelName=ctx.model||((Store.runOrders||[])[0]||{}).product||'—';
   if(!ctx.stationName)ctx.stationName=LL('غير محددة','—','—','—');
   if(!ctx.routeName)ctx.routeName=LL('المسار الرئيسي','Main route','مرکزی روٹ','Voie principale');

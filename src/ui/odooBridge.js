@@ -7,7 +7,8 @@
  *
  *   Auth.login / Auth.logout   → app users managed in Odoo (sharqia.mes.user)
  *   session on reload          → re-enters the signed-in account
- *   Store domains              → replaced with Odoo records (see DOMAINS)
+ *   demo scenario              → wiped on start (wipeDemo), libraries kept
+ *   Store domains              → replaced with Odoo records (see RECORDS)
  *   Actions.dfSubmit           → creates sharqia.mes.defect
  *   Actions.annSave            → creates / writes sharqia.mes.announcement
  *   Actions.annDelete          → ends the announcement in Odoo (expires = yesterday)
@@ -19,12 +20,94 @@ import { repository } from '../services/data/repository.js';
 import { authService } from '../services/auth/authService.js';
 import { log } from '../core/logger.js';
 
-// Master data: taken from Odoo once it holds records. Until someone sets it up
-// there, the app keeps its own, because its screens cannot render without
-// stations and staff.
-const MASTER = ['employees', 'stations', 'prodRoutes'];
-// Day-to-day records: Odoo is the only truth, even when it has none yet.
-const RECORDS = ['runOrders', 'announcements', 'defects', 'qcItems'];
+// Stations: from Odoo once work centers exist there; until then the app keeps
+// its station list (wiped of demo figures), because its screens are laid out
+// around the station keys.
+const MASTER = ['stations'];
+// Everything else: Odoo is the only truth, even when it has none yet.
+const RECORDS = ['employees', 'prodRoutes', 'runOrders', 'announcements', 'defects', 'qcItems'];
+
+// ─── Demo data ───
+// The app ships a full demo scenario (accounts, staff, orders A102, hanger
+// line, materials, QC queue…). With live data none of it may show. Reference
+// libraries stay: seam types, operation names, station types, line templates,
+// sizes, embroidery types — they are the vocabulary real records are built from.
+const DEMO_LISTS = ['employees', 'runOrders', 'tasks', 'prodRoutes', 'qcItems', 'defects', 'notifications',
+  'announcements', 'issueReqs', 'recvReqs', 'materials', 'hangers', 'pieces', 'alerts', 'issues', 'bnLog',
+  'stLog', 'deptInstr', 'embDrafts', 'orderDrafts', 'whDrafts', 'accounts', 'demoAccounts',
+  'defectStockMoves', 'reinspectTasks'];
+// Transactional leftovers a device saved while it ran the demo.
+const DEMO_STORAGE = ['sharqia_drafts', 'sharqia_emb_drafts', 'sharqia_model_routes', 'sharqia_recent_models',
+  'sharqia_seam_img', 'sharqia_anns'];
+const WIPED_FLAG = 'sharqia_demo_wiped_v1';
+
+function wipeDemo() {
+  DEMO_LISTS.forEach(function (k) { if (Array.isArray(Store[k])) Store[k] = []; });
+  Store.userPw = {}; Store.userPwHash = {};
+  Store.techpack = {};
+  Store.hs = { configured: false, warehouses: [], routes: [], _log: [] };
+  Store._hsSeq = { r: 0, p: 0, w: 0 };
+  Store._tasksSeeded = true;
+  if (Store.timer) Store.timer = { running: false, paused: false, startMs: 0, accumMs: 0, piece: null, std: Store.timer.std || 0 };
+  // Station list stays (keys, codes, lines); every demo figure on it goes.
+  (Store.stations || []).forEach(function (s) {
+    Object.assign(s, { status: 'st_active', staffCur: 0, staffNeed: 0, wip: 0, waiting: 0, doneP: 0, target: 0,
+      mo: null, product: null, machineOk: true, help: false, qcIssue: false, downtime: 0, reason: null, late: 0 });
+  });
+  try {
+    if (!localStorage.getItem(WIPED_FLAG)) {
+      DEMO_STORAGE.forEach(function (k) { localStorage.removeItem(k); });
+      localStorage.setItem(WIPED_FLAG, new Date().toISOString());
+    }
+  } catch (e) { /* storage may be unavailable */ }
+  try { if (typeof rebuildPerm === 'function') rebuildPerm(); } catch (e) {}
+  Store.defectSeq = 1;
+  // A station worker with no task assigned used to get a made-up one (A102 /
+  // MO-0044); now they have none until production assigns it.
+  W._demoWork = function () { return null; };
+  dropUnknownStaff();
+  // Station work instructions were demo text ("use the specified black thread"…).
+  Store.workInstr = {};
+  // The admin «Odoo» screen showed a made-up server and database.
+  Store.server = 'https://test.sharqiaa-tech.net'; Store.db = '';
+  // Daily charts are fixed demo figures (hours, quality, order statuses) with
+  // no live source yet.
+  if (typeof Screens !== 'undefined' && Screens.dailyCharts) {
+    Screens.dailyCharts = function () {
+      try { topbar(T('daily_prod'), true); } catch (e) {}
+      $('view').innerHTML = noDataBox();
+    };
+    if (W.Router && Router.routes && Router.routes.dailyCharts) Router.routes.dailyCharts = Screens.dailyCharts;
+  }
+  guardScreens();
+}
+
+function noDataBox() {
+  var msg = LL('لا توجد بيانات بعد — تظهر هنا حين يبدأ الإنتاج الفعلي', 'No data yet — this fills in once real production starts', 'ابھی کوئی ڈیٹا نہیں', 'Pas encore de données');
+  return typeof emptyBox === 'function' ? emptyBox(msg, '📭', false) : '<div class="empty">' + msg + '</div>';
+}
+
+// Screens written around the demo scenario assume an order, a task or a
+// configured line exists and throw on an empty factory. Such a screen shows
+// "no data yet" instead of an error page; the error still goes to the console.
+// The router dispatches through its own map (Router.routes) and the tabs call
+// Screens directly, so both are guarded.
+function guardScreens() {
+  function guard(name, fn) {
+    if (typeof fn !== 'function' || fn.__guarded || name === 'login' || name === 'langPick') return fn;
+    var g = function () {
+      try { return fn.apply(this, arguments); } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
+        log.warn('screen ' + name + ' has no data to show:', e.message);
+        $('view').innerHTML = noDataBox();
+      }
+    };
+    g.__guarded = true;
+    return g;
+  }
+  if (typeof Screens !== 'undefined') Object.keys(Screens).forEach(function (n) { Screens[n] = guard(n, Screens[n]); });
+  if (W.Router && Router.routes) Object.keys(Router.routes).forEach(function (n) { Router.routes[n] = guard(n, Router.routes[n]); });
+}
 
 const W = window;
 const link = { mode: 'odoo', signedIn: false, loadedAt: null, domains: {}, synced: [], error: null };
@@ -71,7 +154,23 @@ function hydrate(snap) {
     }
     Store[k] = list;
   });
+  dropUnknownStaff();
   try { if (typeof rebuildPerm === 'function') rebuildPerm(); } catch (e) {}
+}
+
+// Factory-map templates are the manager's layout and stay, but the demo map
+// came with demo workers assigned to its stations. Only assignments to people
+// who exist (Odoo employees) are kept.
+function dropUnknownStaff() {
+  var known = {};
+  (Store.employees || []).forEach(function (e) { known[e.id] = true; });
+  (Store.prodTemplates || []).forEach(function (t) {
+    (t.routes || []).forEach(function (rt) {
+      (rt.groups || []).concat(rt.points || []).forEach(function (g) {
+        if (Array.isArray(g.emps)) g.emps = g.emps.filter(function (x) { return known[x && typeof x === 'object' ? x.id : x]; });
+      });
+    });
+  });
 }
 
 async function refresh() {
@@ -202,6 +301,7 @@ export async function installOdooBridge() {
   // Live accounts only: the login screen's demo picker (with its passwords)
   // and the demo "any password" rule belong to test mode.
   Store.demoMode = false;
+  wipeDemo();
   wrapAuth();
   wrapActions();
   render();
