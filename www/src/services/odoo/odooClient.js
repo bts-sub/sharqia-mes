@@ -2,11 +2,12 @@
  * Odoo client (Odoo 19 compatible).
  *
  * Three auth modes (see .env ODOO_AUTH_MODE):
- *   - "gateway": the Sharqia portal's MES gateway (/api/mes, same origin).
- *                Workers sign in with their portal account; the portal checks
- *                their app role (hr.employee.mes_role) and runs the ORM call
- *                with its service account, limited to MES models. Default for
- *                the deployed app — factory workers have no Odoo users.
+ *   - "gateway": the sharqia_mes module's own API (MES_GATEWAY, e.g.
+ *                https://<odoo>/sharqia_mes/api). Users are the module's app
+ *                users (sharqia.mes.user: login, password, role, station) —
+ *                not Odoo users, not portal accounts. Login returns a signed
+ *                token kept on the device and sent in each request body.
+ *                Default for the deployed app.
  *   - "session": POST /web/session/authenticate with {db,login,password};
  *                subsequent calls reuse the session cookie (credentials:'include').
  *   - "apikey" : send an Odoo API key; call the ORM through /jsonrpc "call_kw".
@@ -19,7 +20,9 @@ import { CONFIG, odooEndpoint, assertOdooConfigured, useGateway } from '../../co
 import { postJson } from '../http.js';
 import { OdooError, AuthError, NetworkError } from '../../core/errors.js';
 import { log } from '../../core/logger.js';
+import { storage } from '../storage.js';
 
+const TOKEN_KEY = 'sharqia.mes.token';
 let _session = { uid: null, apiKey: null, login: null, account: null };
 
 function rpc(method, params) {
@@ -35,17 +38,20 @@ function unwrap(resp) {
 }
 
 /**
- * Gateway request. The portal answers {result} or {error: "<Arabic message>"}
- * with an HTTP status, so the message is surfaced as-is (401 → AuthError).
+ * Module API request. Odoo is on another origin, so the body is sent as
+ * text/plain with the token inside it: a "simple" cross-origin request that
+ * needs no preflight and no cookie. The module answers {…} or
+ * {error: "<Arabic message>"} with an HTTP status (401 → AuthError).
  */
 async function gateway(path, body) {
+  var payload = Object.assign({ token: (await storage.get(TOKEN_KEY)) || '' }, body || {});
   var res;
   try {
     res = await fetch(odooEndpoint() + path, {
-      method: body === undefined ? 'GET' : 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      credentials: 'same-origin',
-      body: body === undefined ? undefined : JSON.stringify(body)
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      credentials: 'omit',
+      body: JSON.stringify(payload)
     });
   } catch (e) {
     throw new NetworkError('تعذّر الاتصال بالخادم', e);
@@ -54,7 +60,8 @@ async function gateway(path, body) {
   try { data = await res.json(); } catch (e) { /* non-JSON */ }
   if (!res.ok) {
     var msg = (data && data.error) || ('HTTP ' + res.status);
-    if (res.status === 401 || res.status === 403) throw new AuthError(msg);
+    if (res.status === 401) { await storage.remove(TOKEN_KEY); throw new AuthError(msg); }
+    if (res.status === 403) throw new AuthError(msg);
     throw new OdooError(msg, data);
   }
   return data;
@@ -68,8 +75,9 @@ export const odooClient = {
     assertOdooConfigured();
     if (useGateway()) {
       var r = await gateway('/login', { login: login, password: password });
-      _session = { uid: r.account.employeeId, apiKey: null, login: login, account: r.account };
-      log.info('MES gateway session for', login, 'role=', r.account.role);
+      await storage.set(TOKEN_KEY, r.token);
+      _session = { uid: r.account.userId, apiKey: null, login: login, account: r.account };
+      log.info('MES session for', login, 'role=', r.account.role);
       return r.account;
     }
     var url = odooEndpoint() + '/web/session/authenticate';
@@ -81,12 +89,13 @@ export const odooClient = {
     return result;
   },
 
-  /** Gateway only: the account of a still-valid session cookie, or null. */
+  /** Gateway only: the account of a still-valid stored token, or null. */
   async currentAccount() {
     if (!useGateway()) return null;
+    if (!(await storage.get(TOKEN_KEY))) return null;
     try {
       var r = await gateway('/me');
-      _session = { uid: r.account.employeeId, apiKey: null, login: r.account.u, account: r.account };
+      _session = { uid: r.account.userId, apiKey: null, login: r.account.u, account: r.account };
       return r.account;
     } catch (e) {
       if (e instanceof AuthError) return null;
@@ -100,7 +109,9 @@ export const odooClient = {
   async logout() {
     _session = { uid: null, apiKey: null, login: null, account: null };
     if (useGateway()) {
-      try { await gateway('/logout', {}); } catch (e) {}
+      // The token is stateless: forgetting it on the device signs out here.
+      // "Log out everywhere" is a button on the user form in Odoo.
+      await storage.remove(TOKEN_KEY);
     } else if (CONFIG.ODOO_AUTH_MODE === 'session') {
       try { await postJson(odooEndpoint() + '/web/session/destroy', rpc('call', {}), { credentials: 'include' }); } catch (e) {}
     }

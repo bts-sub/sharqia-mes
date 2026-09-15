@@ -18,8 +18,8 @@ function readEnv() {
     ODOO_API_URL: e.ODOO_API_URL || '',
     // "gateway" | "session" | "apikey"
     ODOO_AUTH_MODE: (e.ODOO_AUTH_MODE || 'session').toLowerCase(),
-    // Gateway mode: path of the Sharqia portal's MES gateway (same origin).
-    MES_GATEWAY: e.MES_GATEWAY || '/api/mes',
+    // Gateway mode: base URL of the sharqia_mes module API in Odoo.
+    MES_GATEWAY: e.MES_GATEWAY || '',
     HTTP_TIMEOUT_MS: parseInt(e.HTTP_TIMEOUT_MS, 10) || 15000,
     HTTP_RETRIES: parseInt(e.HTTP_RETRIES, 10) || 2,
     LOG_LEVEL: (e.LOG_LEVEL || 'info').toLowerCase()
@@ -33,7 +33,7 @@ export function useMock() {
   return CONFIG.DATA_SOURCE !== 'odoo';
 }
 
-/** True when Odoo is reached through the portal gateway (no Odoo user per worker). */
+/** True when the app talks to the sharqia_mes module API with its own app users. */
 export function useGateway() {
   return CONFIG.ODOO_AUTH_MODE === 'gateway';
 }

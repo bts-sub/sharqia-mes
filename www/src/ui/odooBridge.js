@@ -5,7 +5,7 @@
  * and acts through the globals `Auth` and `Actions`. Its design stays
  * untouched; this bridge wraps a few of those entry points:
  *
- *   Auth.login / Auth.logout   → portal account (role from hr.employee.mes_role)
+ *   Auth.login / Auth.logout   → app users managed in Odoo (sharqia.mes.user)
  *   session on reload          → re-enters the signed-in account
  *   Store domains              → replaced with Odoo records (see DOMAINS)
  *   Actions.dfSubmit           → creates sharqia.mes.defect
@@ -28,6 +28,9 @@ const RECORDS = ['runOrders', 'announcements', 'defects', 'qcItems'];
 
 const W = window;
 const link = { mode: 'odoo', signedIn: false, loadedAt: null, domains: {}, synced: [], error: null };
+// Shift hours from Odoo settings (الإعدادات ← تنفيذ التصنيع), sent with the account.
+let settings = { shiftStart: '07:00', shiftEnd: '15:00' };
+function useSettings(account) { if (account && account.settings) settings = Object.assign(settings, account.settings); }
 
 function say(ar, en, kind) {
   try {
@@ -59,6 +62,7 @@ function hydrate(snap) {
     link.domains[k] = { odoo: list.length, source: fromOdoo ? 'odoo' : 'app' };
     if (!fromOdoo) return;
     if (k === 'defects') list.forEach(function (d) { d.stationName = stationLabel(d.stationKey); });
+    if (k === 'employees') list.forEach(function (e) { e.planIn = settings.shiftStart; e.planOut = settings.shiftEnd; });
     if (k === 'announcements') {
       // An announcement «deleted» in the app is ended in Odoo, not removed.
       list = list.filter(function (a) { return !a.expires || a.expires >= today(); });
@@ -103,7 +107,7 @@ function wrapAuth() {
     busy = true;
     say('جارٍ تسجيل الدخول…', 'Signing in…');
     authService.login(u, p)
-      .then(async function (s) { await refresh(); enterAs(s.account); })
+      .then(async function (s) { useSettings(s.account); await refresh(); enterAs(s.account); })
       .catch(function (e) {
         // The server's reason (wrong password, no app role…) in every language.
         var why = (e && e.message) || 'تعذّر تسجيل الدخول';
@@ -206,6 +210,7 @@ export async function installOdooBridge() {
   try {
     var s = await authService.restore();
     if (s && s.account) {
+      useSettings(s.account);
       if (await refresh()) { if (!(W.App && App.me)) enterAs(s.account); else render(); }
     }
   } catch (e) {

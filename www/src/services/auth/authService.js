@@ -38,11 +38,11 @@ export const authService = {
   async login(login, password) {
     if (!login) throw new AuthError('Login is required');
     var user = await repository.login(login, password);
-    // Gateway: the portal already resolved the role from hr.employee.mes_role.
+    // Gateway: the role comes with the account (sharqia.mes.user.role).
     var role = useMock() ? (user && user.role) || 'pm'
       : useGateway() ? user.role : rolesFromGroups(user && user.groups);
     var session = {
-      uid: (user && (user.uid || user.employeeId || user.id)) || null,
+      uid: (user && (user.uid || user.userId || user.id)) || null,
       login: login,
       name: (user && user.fullName && user.fullName.ar) || (user && (user.name && user.name.ar)) || (user && user.name) || login,
       role: role,
@@ -58,12 +58,12 @@ export const authService = {
   async logout() { await repository.logout(); await storage.remove(SESSION_KEY); },
 
   async restore() {
-    // Gateway: the httpOnly cookie is the session; the stored marker alone
-    // proves nothing, so ask the server (and forget a marker it rejects).
+    // Gateway: a stored token may be expired, revoked or its user disabled —
+    // only the server knows, so ask it (and forget what it rejects).
     if (!useMock() && useGateway()) {
       var account = await repository.currentAccount();
       if (!account) { await storage.remove(SESSION_KEY); return null; }
-      return { uid: account.employeeId, login: account.u, name: account.fullName.ar, role: account.role, station: account.station, account: account };
+      return { uid: account.userId, login: account.u, name: account.fullName.ar, role: account.role, station: account.station, account: account };
     }
     return storage.getJSON(SESSION_KEY);
   },

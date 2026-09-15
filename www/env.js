@@ -2,7 +2,7 @@
 window.__SHARQIA_ENV__ = {
   "SHARQIA_DATA_SOURCE": "odoo",
   "ODOO_AUTH_MODE": "gateway",
-  "MES_GATEWAY": "/api/mes",
+  "MES_GATEWAY": "https://test.sharqiaa-tech.net/sharqia_mes/api",
   "ODOO_URL": "",
   "ODOO_DATABASE": "",
   "ODOO_API_URL": "",

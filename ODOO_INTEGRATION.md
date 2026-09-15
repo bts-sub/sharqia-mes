@@ -1,13 +1,16 @@
 # Odoo 19 SaaS Integration Plan
 
-> **LIVE (2026-09-15): the deployed app runs in ODOO mode through the portal gateway.**
+> **LIVE (2026-09-15): the deployed app runs in ODOO mode, standalone.**
 >
-> - **Path:** app → `mes.sharqiaa-tech.net/api/mes/*` (host nginx) → sharqia-portal
->   `src/routes/mes.js` → Odoo with the portal's service account. No Odoo URL,
->   database or key in this repo; no Odoo user per worker.
-> - **Sign-in:** portal account. App role = «دور تطبيق التصنيع» (`hr.employee.mes_role`:
->   station/qc/store/pm/plant/admin). No role → refused. Portal `admin` → app admin.
-> - **Gateway limits:** only MES models; standard models (`hr.employee`, `mrp.*`,
+> - **Path:** app → `https://test.sharqiaa-tech.net/sharqia_mes/api/{login,me,call}`
+>   (controller in the `sharqia_mes` module). Independent of the HR portal. Requests
+>   are text/plain with the token in the body (simple CORS, no preflight).
+> - **Users:** the module's own `sharqia.mes.user` — Odoo → تنفيذ التصنيع → الإعدادات
+>   → مستخدمو التطبيق: login, password (pbkdf2 hash), role (station/qc/store/pm/plant/
+>   admin), station. Signed stateless token (database secret); disabling the user,
+>   changing the password or «إنهاء جلساته» invalidates it. Lock after N failures.
+> - **Settings:** Odoo → الإعدادات → تنفيذ التصنيع (session hours, lockout, shift hours).
+> - **API limits:** only MES models; standard models (`hr.employee`, `mrp.*`,
 >   `product.product`) read with whitelisted fields; writes per role; never unlink.
 > - **Data** (`src/ui/odooBridge.js`): employees / stations / routes come from Odoo
 >   once Odoo holds any, else the app keeps its own; orders, announcements, defects
