@@ -15,7 +15,7 @@ import { repository } from '../data/repository.js';
 import { storage } from '../storage.js';
 import { AuthError } from '../../core/errors.js';
 import { log } from '../../core/logger.js';
-import { useMock } from '../../config/env.js';
+import { useMock, useGateway } from '../../config/env.js';
 
 const SESSION_KEY = 'sharqia.session';
 
@@ -38,12 +38,16 @@ export const authService = {
   async login(login, password) {
     if (!login) throw new AuthError('Login is required');
     var user = await repository.login(login, password);
-    var role = useMock() ? (user && user.role) || 'pm' : rolesFromGroups(user && user.groups);
+    // Gateway: the portal already resolved the role from hr.employee.mes_role.
+    var role = useMock() ? (user && user.role) || 'pm'
+      : useGateway() ? user.role : rolesFromGroups(user && user.groups);
     var session = {
-      uid: (user && user.uid) || (user && user.id) || null,
+      uid: (user && (user.uid || user.employeeId || user.id)) || null,
       login: login,
-      name: (user && (user.name && user.name.ar)) || (user && user.name) || login,
+      name: (user && user.fullName && user.fullName.ar) || (user && (user.name && user.name.ar)) || (user && user.name) || login,
       role: role,
+      station: (user && user.station) || null,
+      account: useGateway() ? user : null,
       at: '' // stamp on device; avoid Date in shared code paths
     };
     await storage.setJSON(SESSION_KEY, session);
@@ -53,7 +57,16 @@ export const authService = {
 
   async logout() { await repository.logout(); await storage.remove(SESSION_KEY); },
 
-  async restore() { return storage.getJSON(SESSION_KEY); },
+  async restore() {
+    // Gateway: the httpOnly cookie is the session; the stored marker alone
+    // proves nothing, so ask the server (and forget a marker it rejects).
+    if (!useMock() && useGateway()) {
+      var account = await repository.currentAccount();
+      if (!account) { await storage.remove(SESSION_KEY); return null; }
+      return { uid: account.employeeId, login: account.u, name: account.fullName.ar, role: account.role, station: account.station, account: account };
+    }
+    return storage.getJSON(SESSION_KEY);
+  },
 
   async isAuthenticated() { return !!(await this.restore()); }
 };

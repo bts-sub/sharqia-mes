@@ -26,6 +26,8 @@ export const repository = {
   login(login, password) { return source.login(login, password); },
   logout() { cacheClear(); return source.logout(); },
   currentUser() { return source.currentUser(); },
+  /** Account of a still-valid gateway session (null in mock / when signed out). */
+  currentAccount() { return source.currentAccount ? source.currentAccount() : Promise.resolve(null); },
 
   // Cached reads (invalidate on writes)
   employees(force) { return cached('employees', force, function () { return source.getEmployees(); }); },
@@ -48,6 +50,7 @@ export const repository = {
   async updateTaskProgress(id, c) { return source.updateTaskProgress(id, c); },
   async createDefect(p) { const r = await source.createDefect(p); invalidate('defects'); return r; },
   async createAnnouncement(p) { const r = await source.createAnnouncement(p); invalidate('announcements'); return r; },
+  async updateAnnouncement(id, p) { const r = await source.updateAnnouncement(id, p); invalidate('announcements'); return r; },
 
   /** Snapshot for bootstrap. Returns a Result (never throws). */
   loadAll() { return attempt(function () { return source.loadAll(); }); }

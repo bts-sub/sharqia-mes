@@ -37,29 +37,34 @@ export const MODELS = {
  * Field lists per model. Kept in sync with the `sharqia_mes` module.
  */
 export const FIELDS = {
-  EMPLOYEE:    ['id', 'name', 'active', 'mes_station', 'mes_skill', 'mes_shift', 'mes_efficiency', 'mes_attendance'],
-  STATION:     ['id', 'name', 'mes_type', 'mes_department', 'mes_capacity', 'mes_std_time'],
+  EMPLOYEE:    ['id', 'name', 'active', 'mes_role', 'mes_station', 'mes_skill', 'mes_shift', 'mes_efficiency', 'mes_attendance'],
+  STATION:     ['id', 'name', 'code', 'mes_type', 'mes_department', 'mes_capacity', 'mes_std_time'],
   ROUTE:       ['id', 'name', 'code', 'product_id', 'production_id', 'capacity', 'active', 'point_ids', 'sequence'],
   ROUTE_POINT: ['id', 'name', 'route_id', 'station', 'sequence', 'target', 'qty', 'status', 'employee_ids', 'std_time', 'qc_required'],
   BUFFER:      ['id', 'name', 'capacity', 'used', 'after_route_id', 'next_route_id', 'max_wait'],
   TEMPLATE:    ['id', 'name', 'is_default', 'route_ids', 'wh_mode'],
   PRODUCT:     ['id', 'name', 'default_code', 'barcode', 'product_template_attribute_value_ids'],
-  MO:          ['id', 'name', 'product_id', 'product_qty', 'qty_produced', 'state', 'date_start', 'date_finished', 'mes_priority', 'mes_route_ids'],
+  MO:          ['id', 'name', 'product_id', 'product_qty', 'qty_produced', 'state', 'date_start', 'date_finished', 'date_deadline', 'origin', 'mes_priority', 'mes_route_ids'],
   WORKORDER:   ['id', 'name', 'production_id', 'workcenter_id', 'state', 'qty_produced', 'qty_producing', 'duration', 'mes_route_id', 'mes_status'],
   HANGER:      ['id', 'name', 'production_id', 'route_id', 'station_id', 'next_station_id', 'qty', 'status', 'entered_at'],
-  DEFECT:      ['id', 'name', 'piece_no', 'production_id', 'station', 'type', 'severity', 'status', 'image', 'created_at'],
+  // The photo (`image`) is not listed: one base64 image per defect would make
+  // the snapshot megabytes. It is written on create and viewed in Odoo.
+  DEFECT:      ['id', 'name', 'piece_no', 'production_id', 'station', 'type', 'severity', 'status', 'created_at',
+                'note', 'order_ref', 'model_ref', 'route_ref', 'reported_by'],
   QC_CHECK:    ['id', 'name', 'production_id', 'model', 'station', 'qty', 'status', 'defect', 'reject_qty'],
-  ANNOUNCEMENT:['id', 'title', 'body', 'type', 'level', 'audience', 'start', 'expires', 'route_id', 'station', 'production_id']
+  ANNOUNCEMENT:['id', 'title', 'body', 'type', 'level', 'audience', 'start', 'expires', 'route_id', 'station', 'production_id',
+                'require_ack', 'pinned', 'order_ref', 'created_by']
 };
 
 /**
  * Work-order lifecycle methods. Standard mrp.workorder exposes
- * button_start / button_pause / button_finish (used by Odoo's tablet view).
+ * button_start / button_pending / button_finish (used by Odoo's tablet view;
+ * "pause" is button_pending in Odoo 19).
  * Produced quantity is written directly to qty_produced (see mappers).
  */
 export const WO_METHODS = {
   START:  'button_start',
-  PAUSE:  'button_pause',
+  PAUSE:  'button_pending',
   FINISH: 'button_finish',
   RECORD_QTY: 'record_production'
 };

@@ -1,10 +1,8 @@
 /**
- * OdooDataSource — implements the DataSource contract against Odoo 19 SaaS.
+ * OdooDataSource — implements the DataSource contract against Odoo 19.
  *
- * ⚠️ This talks to whatever ODOO_URL/ODOO_DATABASE you configure. It ships with
- * NO endpoint. Until you confirm the custom module's model/field names
- * (odooModels.js), keep SHARQIA_DATA_SOURCE=mock — every method here will throw a
- * clear "not configured" error rather than hitting anything.
+ * Deployed through the portal gateway (ODOO_AUTH_MODE=gateway); the direct
+ * session/apikey modes still work for an Odoo user.
  *
  * All ORM specifics are isolated to odooClient + odooModels + mappers.
  */
@@ -22,9 +20,14 @@ export class OdooDataSource extends DataSource {
   }
   async logout() { return odooClient.logout(); }
   async currentUser() { return odooClient.session(); }
+  async currentAccount() { return odooClient.currentAccount(); }
 
   async getEmployees() { return (await odooClient.searchRead(MODELS.EMPLOYEE, [['active', '=', true]], FIELDS.EMPLOYEE)).map(map.mapEmployee); }
-  async getStations() { return (await odooClient.searchRead(MODELS.STATION, [], FIELDS.STATION)).map(map.mapStation); }
+  async getStations(employees) {
+    const staff = {};
+    (employees || []).forEach(function (e) { if (e.station) staff[e.station] = (staff[e.station] || 0) + 1; });
+    return (await odooClient.searchRead(MODELS.STATION, [], FIELDS.STATION)).map(function (r) { return map.mapStation(r, staff); });
+  }
   async getBuffers() { return (await odooClient.searchRead(MODELS.BUFFER, [], FIELDS.BUFFER)).map(map.mapBuffer); }
   async getProducts() { return (await odooClient.searchRead(MODELS.PRODUCT, [], FIELDS.PRODUCT)).map(map.mapProduct); }
 
@@ -39,14 +42,24 @@ export class OdooDataSource extends DataSource {
   }
 
   async getTemplates() { return odooClient.searchRead(MODELS.TEMPLATE, [], FIELDS.TEMPLATE); }
-  async getManufacturingOrders() { return (await odooClient.searchRead(MODELS.MO, [], FIELDS.MO)).map(map.mapMO); }
+  async getManufacturingOrders(routes) {
+    // An order's stages are the stations of the routes linked to it, in order.
+    const stagesByMo = {};
+    (routes || []).forEach(function (r) {
+      if (!r.mo) return;
+      const list = stagesByMo[r.mo] = stagesByMo[r.mo] || [];
+      r.points.forEach(function (p) { if (list.indexOf(p.station) < 0) list.push(p.station); });
+    });
+    return (await odooClient.searchRead(MODELS.MO, [], FIELDS.MO, { order: 'id desc', limit: 500 }))
+      .map(function (r) { return map.mapMO(r, stagesByMo); });
+  }
   async getWorkOrders(orderId) {
     const domain = orderId ? [['production_id', '=', orderId]] : [];
     return odooClient.searchRead(MODELS.WORKORDER, domain, FIELDS.WORKORDER);
   }
   async getAnnouncements() { return (await odooClient.searchRead(MODELS.ANNOUNCEMENT, [], FIELDS.ANNOUNCEMENT)).map(map.mapAnnouncement); }
-  async getDefects() { return odooClient.searchRead(MODELS.DEFECT, [], FIELDS.DEFECT); }
-  async getQcItems() { return odooClient.searchRead(MODELS.QC_CHECK, [], FIELDS.QC_CHECK); }
+  async getDefects() { return (await odooClient.searchRead(MODELS.DEFECT, [], FIELDS.DEFECT, { limit: 500 })).map(map.mapDefect); }
+  async getQcItems() { return (await odooClient.searchRead(MODELS.QC_CHECK, [], FIELDS.QC_CHECK, { limit: 500 })).map(map.mapQcCheck); }
 
   async createOrder(payload) { return odooClient.create(MODELS.MO, payload); }
   async updateOrder(id, changes) { return odooClient.write(MODELS.MO, [id], changes); }
@@ -56,20 +69,23 @@ export class OdooDataSource extends DataSource {
     return odooClient.callMethod(MODELS.WORKORDER, method, [id]);
   }
   async recordProduction(workOrderId, qty) {
-    // CONFIRM: standard mrp uses a wizard; a custom method is usually cleaner.
     return odooClient.write(MODELS.WORKORDER, [workOrderId], map.toOdooWorkorderProgress({ qtyProduced: qty }));
   }
   async updateTaskProgress(taskId, changes) { return odooClient.write(MODELS.WORKORDER, [taskId], map.toOdooWorkorderProgress(changes)); }
   async createDefect(payload) { return odooClient.create(MODELS.DEFECT, map.toOdooDefect(payload)); }
   async createAnnouncement(payload) { return odooClient.create(MODELS.ANNOUNCEMENT, map.toOdooAnnouncement(payload)); }
+  async updateAnnouncement(id, payload) { return odooClient.write(MODELS.ANNOUNCEMENT, [id], map.toOdooAnnouncement(payload)); }
 
   async loadAll() {
     log.info('Loading all domains from Odoo…');
-    const [employees, stations, prodRoutes, buffers, prodTemplates, techpack, runOrders, announcements] =
+    const [employees, prodRoutes, buffers, prodTemplates, techpack, announcements, defects, qcItems] =
       await Promise.all([
-        this.getEmployees(), this.getStations(), this.getRoutes(), this.getBuffers(),
-        this.getTemplates(), this.getProducts(), this.getManufacturingOrders(), this.getAnnouncements()
+        this.getEmployees(), this.getRoutes(), this.getBuffers(), this.getTemplates(),
+        this.getProducts(), this.getAnnouncements(), this.getDefects(), this.getQcItems()
       ]);
-    return { employees, stations, prodRoutes, buffers, prodTemplates, techpack, runOrders, announcements };
+    const [stations, runOrders] = await Promise.all([
+      this.getStations(employees), this.getManufacturingOrders(prodRoutes)
+    ]);
+    return { employees, stations, prodRoutes, buffers, prodTemplates, techpack, runOrders, announcements, defects, qcItems };
   }
 }

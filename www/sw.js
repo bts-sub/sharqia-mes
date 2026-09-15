@@ -10,7 +10,7 @@
  *
  * عند كل نشر: غيّر VERSION ليُمسح الكاش القديم.
  */
-const VERSION = 'sharqia-mes-v3';
+const VERSION = 'sharqia-mes-v4';
 const CORE = ['/', '/index.html', '/env.js', '/site.webmanifest', '/favicon.ico',
   '/assets/icon-192.png', '/assets/icon-512.png', '/assets/icon-180.png', '/assets/icon-32.png'];
 
@@ -35,6 +35,9 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;           // الخطوط الخارجية تمرّ كما هي
+  // الخادم وحده يعرف الجلسة والبيانات: ردٌّ مخبوء من /api/mes/me يُدخل
+  // مستخدمًا خرج، ويعرض أرقامًا قديمة كأنها حيّة.
+  if (url.pathname.startsWith('/api/')) return;
 
   const fresh = req.mode === 'navigate' || url.pathname === '/env.js';
   if (fresh) {

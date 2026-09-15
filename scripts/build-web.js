@@ -46,39 +46,14 @@ function copyDir(src, dst) {
   }
 }
 
-const HOOK = `
-<!-- ===== SHARQIA DATA HOOK (generated) ===== -->
-<!-- Guarded hydration: in ODOO mode, replaces the UI's demo seed with live data.
-     In MOCK mode __SHARQIA_DATA__ is undefined and this is a complete no-op,
-     so the UI behaves exactly like the original app. -->
-<script>
-(function () {
-  function hydrate() {
-    try {
-      var snap = window.__SHARQIA_DATA__;
-      if (!snap || typeof Store === 'undefined') return;
-      // Overwrite only known data domains; keep all UI/meta/logic intact.
-      ['employees','stations','prodRoutes','buffers','prodTemplates','runOrders','announcements','defects','qcItems']
-        .forEach(function (k) { if (snap[k] != null) Store[k] = snap[k]; });
-      if (snap.techpack) { /* techpack is keyed by model; map array -> object */
-        try { var tp = {}; (snap.techpack || []).forEach(function (p) { tp[p.model] = p; }); if (Object.keys(tp).length) Store.techpack = tp; } catch (e) {}
-      }
-      try { if (typeof rebuildPerm === 'function') rebuildPerm(); } catch (e) {}
-      try { if (window.Router && Router.render) Router.render(); } catch (e) {}
-    } catch (e) { try { console.error('[sharqia] hydrate failed', e); } catch (_) {} }
-  }
-  // Run after the app has booted and defined Store/Router.
-  if (document.readyState === 'complete') setTimeout(hydrate, 0);
-  else window.addEventListener('load', function () { setTimeout(hydrate, 0); });
-})();
-</script>
-`;
-
+// Hydration and sign-in used to be an inline hook here; they now live in
+// src/ui/odooBridge.js (loaded by bootstrap in ODOO mode only), which also
+// saves actions back to Odoo.
 function buildIndex() {
   const appFile = path.join(www, 'app', 'sharqia_mes.html');
   let html = fs.readFileSync(appFile, 'utf8');
   const inject = '\n<script src="env.js"></script>\n' +
-    '<script type="module" src="src/bootstrap.js"></script>\n' + HOOK + '\n';
+    '<script type="module" src="src/bootstrap.js"></script>\n';
   if (html.indexOf('</body>') >= 0) html = html.replace('</body>', inject + '</body>');
   else html += inject;
   fs.writeFileSync(path.join(www, 'index.html'), html);

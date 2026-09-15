@@ -16,7 +16,10 @@ function readEnv() {
     ODOO_URL: e.ODOO_URL || '',
     ODOO_DATABASE: e.ODOO_DATABASE || '',
     ODOO_API_URL: e.ODOO_API_URL || '',
+    // "gateway" | "session" | "apikey"
     ODOO_AUTH_MODE: (e.ODOO_AUTH_MODE || 'session').toLowerCase(),
+    // Gateway mode: path of the Sharqia portal's MES gateway (same origin).
+    MES_GATEWAY: e.MES_GATEWAY || '/api/mes',
     HTTP_TIMEOUT_MS: parseInt(e.HTTP_TIMEOUT_MS, 10) || 15000,
     HTTP_RETRIES: parseInt(e.HTTP_RETRIES, 10) || 2,
     LOG_LEVEL: (e.LOG_LEVEL || 'info').toLowerCase()
@@ -30,8 +33,14 @@ export function useMock() {
   return CONFIG.DATA_SOURCE !== 'odoo';
 }
 
+/** True when Odoo is reached through the portal gateway (no Odoo user per worker). */
+export function useGateway() {
+  return CONFIG.ODOO_AUTH_MODE === 'gateway';
+}
+
 /** The effective JSON-RPC endpoint (ODOO_API_URL overrides ODOO_URL). */
 export function odooEndpoint() {
+  if (useGateway()) return CONFIG.MES_GATEWAY.replace(/\/+$/, '');
   var base = (CONFIG.ODOO_API_URL || CONFIG.ODOO_URL || '').replace(/\/+$/, '');
   return base;
 }
