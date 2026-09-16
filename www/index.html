@@ -41,6 +41,12 @@
 
   .bar{background:var(--surface);color:var(--ink);padding:13px 14px;display:flex;align-items:center;gap:8px;min-height:58px;box-shadow:var(--sh-1);border-bottom:2px solid var(--brand);position:relative;z-index:2}
   .bar h1{font-size:16.5px;font-weight:800;flex:1;letter-spacing:-.2px;color:var(--ink)}
+  .who{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+  .whoAv{border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--line)}
+  .whoAvTxt{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;border:none}
+  .whoTxt{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+  .whoTxt b{font-size:15px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .whoTxt span{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar .vchip{font-size:9px;opacity:.7;font-weight:700;color:var(--muted)}
   .bar .ic{width:37px;height:37px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);font-size:16px;cursor:pointer;border:1px solid var(--line);color:var(--ink);transition:.15s}
   .bar .ic:hover{background:var(--brand-tint)}.bar .ic:active{transform:scale(.92)}
@@ -249,7 +255,7 @@
   .imgtile small{font-size:9px;margin-top:3px;opacity:.9}
   .tprow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.tprow::-webkit-scrollbar{display:none}
   .verdict{border-radius:12px;padding:13px;text-align:center;font-weight:800;font-size:15px;margin-top:6px}.verdict.pass{background:rgba(16,185,129,.12);color:var(--done)}.verdict.fail{background:rgba(220,38,38,.1);color:var(--late)}
-  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:14px 10px;text-align:center;box-shadow:var(--sh-1);animation:cardIn .3s ease both}.stat .v{font-size:23px;font-weight:800;letter-spacing:-.5px}.stat .l{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:8px 6px;text-align:center;box-shadow:var(--sh-1);animation:cardIn .3s ease both}.stat .v{font-size:17px;font-weight:800;letter-spacing:-.5px}.stat .l{font-size:10px;color:var(--muted);margin-top:1px;font-weight:600}
   .stat.clk{cursor:pointer}
   .overlay{position:fixed;inset:0;background:rgba(10,15,20,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;animation:fadeIn .2s ease;backdrop-filter:blur(2px)}
   .sheet{background:var(--surface);color:var(--ink);width:100%;max-width:420px;border-radius:var(--r-xl);padding:18px;max-height:88vh;overflow-y:auto;box-shadow:var(--sh-3);animation:sheetIn .28s cubic-bezier(.2,.7,.3,1)}
@@ -1853,9 +1859,18 @@ function topbar(title,back){dbg('screen',title);
   /* مدير الإنتاج: هيدر بسيط بلا رقم إصدار/إعادة تحميل/إيقاف (المعلومات التقنية داخل الإعدادات فقط) */
   var isPM=App.me&&App.me.role==='pm';
   var right=isPM?'':('<span class="vchip">v'+APP.version+'</span>'+(App.me?'<button class="ic" onclick="Router.render()" aria-label="reload">↻</button><button class="logoutbtn" onclick="Auth.logoutConfirm()" aria-label="'+esc(T('logout'))+'">'+ICON('logout',15)+'<span>'+esc(T('logout'))+'</span></button>':''));
+  /* الهوية في الأعلى: صورة الموظف واسمه ووظيفته. وفي الشاشات الداخلية
+     يظهر عنوان الشاشة مكانها ليعرف المستخدم أين هو. */
+  var me=App.me;
+  var ident=(me&&!back)?('<div class="who">'+meAvatar(36)+'<div class="whoTxt"><b>'+esc(acctName(me))+'</b><span>'+esc(me.jobTitle||tr((Store.roleName||{})[me.role]||{ar:''}))+'</span></div></div>')
+    :((back?'':logoMark(32))+'<h1>'+esc(title)+'</h1>');
   $('topbar').innerHTML='<div class="bar">'+
-    (back?'<button class="ic flip" onclick="Router.back()">‹</button>':'')+logoMark(32)+
-    '<h1>'+esc(title)+'</h1>'+right+'</div>';}
+    (back?'<button class="ic flip" onclick="Router.back()">‹</button>':'')+ident+right+'</div>';}
+/* صورة الموظف من بطاقته في أودو، وإلا أول حرفٍ من اسمه. */
+function meAvatar(size){var me=App.me||{};var s=size||36;
+  if(me.avatar)return '<img class="whoAv" src="'+me.avatar+'" alt="" style="width:'+s+'px;height:'+s+'px">';
+  var n=(acctName(me)||'').trim();
+  return '<span class="whoAv whoAvTxt" style="width:'+s+'px;height:'+s+'px;background:'+(me.color||'var(--primary)')+';font-size:'+Math.round(s*0.42)+'px">'+esc(n?n[0]:'؟')+'</span>';}
 if(window.addEventListener){window.addEventListener('click',function(ev){try{var l=((ev.target&&ev.target.textContent)||'').trim().slice(0,40);if(l)dbg('button',l);}catch(e){}},true);}
 
 /* ============================================================
@@ -4581,7 +4596,7 @@ function kpiRich(o){var pctv=(o.pct!=null)?Math.min(100,Math.max(0,o.pct)):null;
     '</div>';}
 Screens._pmHome=function(){var me=App.me;topbar(T('home'),false);
   var unread=Store.notifications.filter(function(x){return x.unread;}).length;
-  $('topbar').innerHTML='<div class="bar">'+logoMark(32)+'<h1>'+esc(roleName(me.role))+'</h1>'+
+  $('topbar').innerHTML='<div class="bar">'+meAvatar(36)+'<div class="whoTxt" style="flex:1;min-width:0"><b>'+esc(acctName(me))+'</b><span>'+esc(me.jobTitle||roleName(me.role))+'</span></div>'+
     '<button class="ic" onclick="Router.go(\'alerts\')" aria-label="'+esc(T('alerts'))+'" style="position:relative">'+ICON('bell',18)+(unread?'<span class="badge">'+unread+'</span>':'')+'</button>'+
     '<button class="ic" onclick="Router.go(\'settings\')" aria-label="'+esc(T('settings'))+'">'+ICON('settings',18)+'</button></div>';
   var h='<div class="dashhdr"><div class="av" style="background:'+me.color+'">'+esc(acctName(me)[0])+'</div>'+
@@ -11577,8 +11592,8 @@ try{
     var r=_home.apply(this,arguments);
     try{
       var v=$('view');
-      if(v&&!v.querySelector('.brandline'))
-        v.insertAdjacentHTML('afterbegin','<div class="brandline">'+logoMark(22)+'<span>تصنيع الشرقية</span></div>');
+      /* لا شريط «تصنيع الشرقية» فوق الرئيسية: الاسم والوظيفة في الهيدر. */
+      var bl=v&&v.querySelector('.brandline');if(bl)bl.remove();
     }catch(e){}
     return r;
   };
