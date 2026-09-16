@@ -1940,13 +1940,13 @@ Screens.login=function(){$('topbar').innerHTML='';applyDir();var yr='2026';try{y
       '<div class="loginlogo">'+logoMark(92)+'</div>'+
       '<div class="loginname">تصنيع الشرقية</div>'+
       
-      '<label class="fl">'+esc(T('username'))+'</label><input class="fi" id="lg_u" placeholder="station.cutting" autocomplete="username">'+
-      '<label class="fl">'+esc(T('password'))+'</label><input class="fi" id="lg_p" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)">'+
+      '<label class="fl">'+esc(T('username'))+'</label><input class="fi" id="lg_u" autocomplete="username">'+
+      '<label class="fl">'+esc(T('password'))+'</label><input class="fi" id="lg_p" type="password" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)">'+
       '<button class="btn p loginbtn" onclick="Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)">'+ICON('login',20)+' '+esc(T('login'))+'</button>'+
       (Store.demoMode?'<div class="demopick"><div class="dl">'+esc(LL('دخول سريع — وضع التجربة','Quick login — Demo mode','فوری — ٹیسٹ','Démo'))+'</div><div class="dpg">'+Store.accounts.map(function(a){var ic=a.role==='admin'?'⚙️':(a.role==='pm'||a.role==='plant')?'📊':a.role==='qc'?'🔍':a.role==='store'?'📦':'👷';return '<button class="dpc" onclick="Auth.enter(Store.accounts['+Store.accounts.indexOf(a)+'])"><span>'+ic+'</span>'+esc(roleName(a.role))+'</button>';}).join('')+'</div></div>':'')+
     '</div>'+
     '<div style="flex:1;min-height:8px"></div>'+
-    '<div class="loginfoot">'+logoMark(30)+'<div class="cp">© '+esc(yr)+' '+esc(LL('شرقيه — بيت العباءة الشرقية','Sharqia — Abaya House','شرقیہ','Sharqia'))+'</div><div class="lv">تصنيع الشرقية</div></div>'+
+    '<div class="loginfoot">'+logoMark(30)+'<div class="cp">'+esc(LL('بيت العباءة الشرقية','Abaya Sharqiaa','بیت العباءة الشرقیة','Abaya Sharqiaa'))+'</div></div>'+
     '</div>';
 };
 
@@ -8591,15 +8591,15 @@ Screens.login=function(){$('topbar').innerHTML='';applyDir();var yr='2026';
   var demo=Store.demoAccounts||[];
   var h='<div class="loginwrap"><div style="flex:1;min-height:8px"></div><div class="logincard">'+
     '<div class="loginlogo">'+logoMark(92)+'</div><div class="loginname">تصنيع الشرقية</div>'+
-    '<label class="fl">'+esc(T('username'))+'</label><input class="fi" id="lg_u" placeholder="production_manager" autocomplete="username">'+
-    '<label class="fl">'+esc(T('password'))+'</label><div style="position:relative"><input class="fi" id="lg_p" type="password" placeholder="••••••••" autocomplete="current-password" style="padding-inline-end:44px" onkeydown="if(event.key===\'Enter\')Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)"><button type="button" onclick="Actions.loginTogglePw()" id="lg_eye" class="pweye" aria-label="'+esc(LL('إظهار كلمة المرور','Show password','پاس ورڈ دکھائیں','Afficher le mot de passe'))+'" aria-pressed="false">'+PW_EYE_ON+'</button></div>'+
+    '<label class="fl">'+esc(T('username'))+'</label><input class="fi" id="lg_u" autocomplete="username">'+
+    '<label class="fl">'+esc(T('password'))+'</label><div style="position:relative"><input class="fi" id="lg_p" type="password" autocomplete="current-password" style="padding-inline-end:44px" onkeydown="if(event.key===\'Enter\')Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)"><button type="button" onclick="Actions.loginTogglePw()" id="lg_eye" class="pweye" aria-label="'+esc(LL('إظهار كلمة المرور','Show password','پاس ورڈ دکھائیں','Afficher le mot de passe'))+'" aria-pressed="false">'+PW_EYE_ON+'</button></div>'+
     '<div id="lg_err" class="te" style="color:var(--late);min-height:16px;margin-top:4px"></div>'+
     '<button class="btn p loginbtn" onclick="Auth.login(($(\'lg_u\')||{}).value,($(\'lg_p\')||{}).value)">'+ICON('login',20)+' '+esc(T('login'))+'</button>';
   if(Store.demoMode&&demo.length){
     h+='<div class="demopick"><div class="dl">'+esc(LL('حسابات التجربة (تظهر في وضع الاختبار فقط)','Demo accounts (test mode only)','ٹیسٹ اکاؤنٹس','Comptes démo'))+'</div>';
     h+='<div style="max-height:230px;overflow:auto;text-align:start">'+demo.map(function(a){return '<div class="listitem clickable" style="margin:4px 0" onclick="Actions.loginAs(\''+a.u+'\')"><div class="row2"><span style="font-size:16px">'+a.ic+'</span><div style="flex:1;min-width:0"><b style="font-size:12px">'+esc(a.name)+'</b><div style="font-size:10.5px;color:var(--muted)">'+esc(a.u)+' · '+esc(a.pw)+'</div></div><span class="minichip">'+esc(LL('دخول','Login','','Entrer'))+'</span></div></div>';}).join('')+'</div></div>';
   }
-  h+='</div><div style="flex:1;min-height:8px"></div><div class="loginfoot">'+logoMark(30)+'<div class="cp">© '+esc(yr)+' '+esc(LL('شرقيه — بيت العباءة الشرقية','Sharqia — Abaya House','','Sharqia'))+'</div><div class="lv">تصنيع الشرقية</div></div></div>';
+  h+='</div><div style="flex:1;min-height:8px"></div><div class="loginfoot">'+logoMark(30)+'<div class="cp">'+esc(LL('بيت العباءة الشرقية','Abaya Sharqiaa','بیت العباءة الشرقیة','Abaya Sharqiaa'))+'</div></div></div>';
   $('view').innerHTML=h;};
 var PW_EYE_ON='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 var PW_EYE_OFF='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10 10 0 0 1 12 19c-6.4 0-10-7-10-7a18.4 18.4 0 0 1 5.1-5.9"/><path d="M9.9 4.2A9 9 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M2 2l20 20"/></svg>';
