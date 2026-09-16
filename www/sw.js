@@ -10,7 +10,7 @@
  *
  * عند كل نشر: غيّر VERSION ليُمسح الكاش القديم.
  */
-const VERSION = 'sharqia-mes-v10';
+const VERSION = 'sharqia-mes-v11';
 const CORE = ['/', '/index.html', '/env.js', '/site.webmanifest?v=arch', '/favicon.ico?v=arch',
   '/assets/icon-192.png?v=arch', '/assets/icon-512.png?v=arch', '/assets/icon-180.png?v=arch', '/assets/icon-32.png?v=arch'];
 
@@ -44,6 +44,20 @@ self.addEventListener('fetch', (e) => {
     e.respondWith((async () => {
       try {
         const res = await fetch(req);
+        // ردٌّ مبتورٌ (انقطعت الشبكة في منتصف الصفحة) يصل بحالة 200 كأنه سليم.
+        // لو خُزِّن بقي التطبيق لا يفتح حتى بعد عودة الشبكة، فنتحقّق أولًا:
+        // الصفحة تنتهي بـ </html>، وطولها يطابق ما أعلنه الخادم.
+        if (req.mode === 'navigate') {
+          const body = await res.clone().text();
+          const len = Number(res.headers.get('content-length') || 0);
+          const whole = body.trimEnd().endsWith('</html>') &&
+            (!len || len === new TextEncoder().encode(body).length);
+          if (!whole) {
+            const saved = await caches.match('/index.html');
+            if (saved) return saved;                    // النسخة الكاملة المحفوظة
+            return new Response(body, { headers: res.headers });
+          }
+        }
         const cache = await caches.open(VERSION);
         cache.put(req.mode === 'navigate' ? '/index.html' : req, res.clone());
         return res;
