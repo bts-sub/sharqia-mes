@@ -290,6 +290,36 @@ function wrapActions() {
   }
 }
 
+// The phone's back button used to leave the app: the app navigates with its
+// own stack (App.stack) and never touched browser history. One spare history
+// entry is kept; each back press lands here and becomes an in-app back
+// (inner screen → previous screen, other tab → home). From the home screen a
+// second press within two seconds exits.
+function installBackButton() {
+  var lastBack = 0;
+  function arm() { try { history.pushState({ sq: 'guard' }, ''); } catch (e) {} }
+  function tip(msg) {
+    try {
+      if (typeof toast === 'function') return toast(msg, 'info');
+    } catch (e) {}
+  }
+  try {
+    if (!(history.state && history.state.sq)) { history.replaceState({ sq: 'root' }, ''); arm(); }
+  } catch (e) { return; }
+  window.addEventListener('popstate', function () {
+    try {
+      if (typeof closeModal === 'function' && document.querySelector('#modal .overlay')) { closeModal(); arm(); return; }
+      if (W.App && App.me && App.stack && App.stack.length) { Router.back(); arm(); return; }
+      if (W.App && App.me && App.tab) { App.tab = 0; Router.render(); arm(); return; }
+    } catch (e) { log.warn('back navigation failed', e); }
+    var now = Date.now();
+    if (now - lastBack < 2000) { try { history.back(); } catch (e) {} return; }
+    lastBack = now;
+    arm();
+    tip(LL('اضغط رجوع مرة أخرى للخروج', 'Press back again to exit', 'باہر نکلنے کے لیے دوبارہ دبائیں', 'Appuyez encore pour quitter'));
+  });
+}
+
 export async function installOdooBridge() {
   W.Sharqia.link = link;
   W.Sharqia.refresh = function () { return refresh().then(function (ok) { if (ok) render(); return ok; }); };
@@ -317,6 +347,8 @@ export async function installOdooBridge() {
     link.error = (e && e.message) || String(e);
     log.error('restore failed', e);
   }
+
+  installBackButton();
 
   // Back to the app after a while → fresh data from Odoo.
   document.addEventListener('visibilitychange', function () {
